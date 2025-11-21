@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم مدیریت جزوات دانشگاهی</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <style>
+        /* استایل‌های جدید با پالت رنگی رسمی */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #000000; /* سیاه */
+            --primary-dark: #333333; /* خاکستری تیره */
+            --secondary: #666666; /* خاکستری متوسط */
+            --light: #f5f5f5; /* خاکستری روشن */
+            --dark: #000000; /* سیاه */
+            --border: #cccccc; /* خاکستری روشن */
+            --danger: #d32f2f; /* قرمز */
+            --success: #388e3c; /* سبز برای موفقیت */
+            --info: #1976d2; /* آبی برای اطلاعات */
+        }
+
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+
+        .btn:disabled {
+            background: var(--secondary);
+            cursor: not-allowed;
+        }
+
+        .search-box {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .search-box input {
+            padding-right: 40px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+        }
+
+        .materials-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        .materials-table th {
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .materials-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--dark);
+        }
+
+        .materials-table tr:hover {
+            background: var(--light);
+        }
+
+        .admin-panel {
+            background: var(--light);
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-label {
+            display: block;
+            padding: 12px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .file-label:hover {
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 6px 12px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .page {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--secondary);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .file-info {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--secondary);
+        }
+
+        .download-btn {
+            padding: 6px 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            margin: 2px;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: var(--success);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .tag-new { background: var(--success); color: white; }
+        .tag-popular { background: var(--danger); color: white; }
+        .tag-featured { background: var(--info); color: white; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+        }
+
+        .preview-container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .preview-canvas {
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            max-width: 100%;
+        }
+
+        .share-link {
+            background: var(--light);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-size: 0.9rem;
+        }
+
+        .tags-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+
+        .tag-option {
+            padding: 5px 10px;
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .tag-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .upload-progress {
+            margin: 15px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--light);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .upload-status {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .university-info {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+        }
+
+        .selection-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .selection-group input {
+            flex: 1;
+        }
+
+        .selection-group button {
+            white-space: nowrap;
+        }
+
+        .selections-container {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .selection-box {
+            flex: 1;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .selection-item {
+            padding: 5px;
+            margin: 2px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .selection-item:hover {
+            background: var(--light);
+        }
+
+        .selection-item.selected {
+            background: var(--primary);
+            color: white;
+        }
+
+        .checkbox {
+            width: 16px;
+            height: 16px;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .admin-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .admin-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .admin-tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .admin-tab-content {
+            display: none;
+        }
+
+        .admin-tab-content.active {
+            display: block;
+        }
+
+        /* استایل‌های بهینه‌شده برای موبایل */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                overflow: auto;
+            }
+            
+            .container {
+                max-width: 100%;
+                height: auto;
+                min-height: 95vh;
+            }
+            
+            .materials-table {
+                font-size: 0.75rem;
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .materials-table th,
+            .materials-table td {
+                padding: 8px 10px;
+                white-space: nowrap;
+            }
+            
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .selections-container {
+                flex-direction: column;
+            }
+            
+            .selection-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .selection-group button {
+                width: 100%;
+            }
+            
+            .logout-btn {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .page {
+                overflow-y: auto;
+            }
+            
+            /* بهبود دکمه‌ها در موبایل */
+            .download-btn {
+                display: block;
+                width: 100%;
+                margin: 5px 0;
+                padding: 8px;
+                font-size: 0.85rem;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+            
+            /* بهبود مودال در موبایل */
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
+            
+            .preview-container {
+                max-width: 100%;
+            }
+            
+            .preview-canvas {
+                width: 100%;
+                height: auto;
+            }
+            
+            .admin-tabs {
+                flex-direction: column;
+            }
+            
+            .admin-tab {
+                text-align: center;
+                border-bottom: none;
+                border-right: 3px solid transparent;
+            }
+            
+            .admin-tab.active {
+                border-right-color: var(--primary);
+                border-bottom-color: transparent;
+            }
+            
+            /* مخفی کردن پیش‌نمایش در موبایل */
+            .mobile-hide {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .materials-table {
+                font-size: 0.7rem;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .content {
+                padding: 10px;
+            }
+            
+            .download-btn {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+            }
+        }
+
+        body.no-scroll {
+            overflow: hidden;
+        }
+        
+        .page {
+            overflow-y: auto;
+        }
+
+        .page::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .page::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+
+        .page::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <!-- مودال پیش‌نمایش -->
+    <div class="modal" id="previewModal">
+        <div class="modal-content">
+            <div class="preview-container">
+                <h3>پیش‌نمایش جزوه</h3>
+                <canvas id="previewCanvas" class="preview-canvas"></canvas>
+                <div>
+                    <button class="btn btn-primary" onclick="downloadCurrentMaterial()">📥 دانلود کامل</button>
+                    <button class="btn btn-danger" onclick="closePreview()">بستن</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مودال اشتراک‌گذاری -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <h3>اشتراک‌گذاری جزوه</h3>
+            <div class="share-link" id="shareLink">
+                در حال تولید لینک...
+            </div>
+            <button class="btn btn-info" onclick="copyShareLink()">📋 کپی لینک</button>
+            <button class="btn btn-danger" onclick="closeShareModal()">بستن</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- صفحه ثبت‌نام -->
+        <div id="loginPage" class="page active">
+            <div class="header">
+                <h1>🎓 سیستم مدیریت جزوات</h1>
+                <p>ورود به سامانه آموزشی</p>
+            </div>
+            <div class="content">
+                <div class="form-group">
+                    <label>نام و نام خانوادگی</label>
+                    <input type="text" class="form-control" id="studentName" placeholder="نام خود را وارد کنید">
+                    <div class="error-message" id="nameError"></div>
+                </div>
+                <div class="form-group">
+                    <label>شماره دانشجویی</label>
+                    <input type="text" class="form-control" id="studentId" placeholder="شماره دانشجویی را وارد کنید">
+                    <div class="error-message" id="idError"></div>
+                </div>
+                <button class="btn btn-primary" onclick="login()">ورود به سیستم</button>
+            </div>
+        </div>
+
+        <!-- صفحه کاربر -->
+        <div id="userPage" class="page">
+            <button class="logout-btn" onclick="logout()">خروج</button>
+            <div class="header">
+                <h1>📚 جزوات درسی</h1>
+                <p id="userWelcome">خوش آمدید</p>
+            </div>
+            <div class="content">
+                <div class="search-box">
+                    <input type="text" class="form-control" id="searchInput" placeholder="جستجو بر اساس نام یا کد جزوه...">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div id="materialsContainer">
+                    <!-- جزوات به صورت داینامیک نمایش داده می‌شوند -->
+                </div>
+            </div>
+        </div>
+
+        <!-- صفحه مدیریت -->
+        <div id="adminPage" class="page">
+            <button class="logout-btn" onclick="logout()">خروج</button>
+            <div class="header">
+                <h1>⚙️ پنل مدیریت</h1>
+                <p>مدیریت جزوات درسی</p>
+            </div>
+            <div class="content">
+                <div class="admin-tabs">
+                    <div class="admin-tab active" onclick="switchAdminTab('materials')">مدیریت جزوات</div>
+                    <div class="admin-tab" onclick="switchAdminTab('users')">مدیریت کاربران</div>
+                </div>
+                
+                <!-- تب مدیریت جزوات -->
+                <div id="materialsTab" class="admin-tab-content active">
+                    <div class="admin-panel">
+                        <div class="form-group">
+                            <label>نام جزوه</label>
+                            <input type="text" class="form-control" id="materialName" placeholder="نام جزوه را وارد کنید">
+                        </div>
+
+                        <!-- بخش دانشگاه و اساتید -->
+                        <div class="university-info">
+                            <h4 style="margin-bottom: 15px; color: var(--primary);">📋 اطلاعات دانشگاه و استاد</h4>
+                            
+                            <div class="selection-group">
+                                <input type="text" class="form-control" id="newUniversity" placeholder="نام دانشگاه جدید">
+                                <button class="btn btn-info" onclick="addUniversity()">➕ افزودن دانشگاه</button>
+                            </div>
+                            
+                            <div class="selection-group">
+                                <input type="text" class="form-control" id="newProfessor" placeholder="نام استاد جدید">
+                                <button class="btn btn-info" onclick="addProfessor()">➕ افزودن استاد</button>
+                            </div>
+
+                            <div class="selections-container">
+                                <div class="selection-box">
+                                    <strong>دانشگاه‌ها:</strong>
+                                    <div id="universitiesList">
+                                        <!-- لیست دانشگاه‌ها -->
+                                    </div>
+                                </div>
+                                <div class="selection-box">
+                                    <strong>اساتید:</strong>
+                                    <div id="professorsList">
+                                        <!-- لیست اساتید -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>برچسب‌ها</label>
+                            <div class="tags-selector">
+                                <div class="tag-option" data-tag="new">جدید</div>
+                                <div class="tag-option" data-tag="popular">پرطرفدار</div>
+                                <div class="tag-option" data-tag="featured">ویژه</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>فایل PDF جزوه</label>
+                            <input type="file" class="file-input" id="materialFile" accept=".pdf">
+                            <label for="materialFile" class="file-label" id="fileLabel">
+                                📁 انتخاب فایل PDF
+                            </label>
+                            <div class="file-info" id="fileInfo"></div>
+                        </div>
+
+                        <button class="btn btn-success" onclick="addMaterial()">افزودن جزوه</button>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" class="form-control" id="adminSearchInput" placeholder="جستجو بر اساس نام یا کد جزوه...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div id="adminMaterialsContainer">
+                        <!-- جزوات در پنل مدیریت -->
+                    </div>
+                </div>
+                
+                <!-- تب مدیریت کاربران -->
+                <div id="usersTab" class="admin-tab-content">
+                    <div class="search-box">
+                        <input type="text" class="form-control" id="userSearchInput" placeholder="جستجو بر اساس نام یا شماره دانشجویی...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div id="usersContainer">
+                        <!-- کاربران در پنل مدیریت -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // تنظیم PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        // داده‌های برنامه
+        let appState = {
+            currentUser: null,
+            isAdmin: false,
+            materials: JSON.parse(localStorage.getItem('materials')) || [],
+            users: JSON.parse(localStorage.getItem('users')) || [],
+            universities: JSON.parse(localStorage.getItem('universities')) || ['دانشگاه تهران', 'دانشگاه صنعتی شریف'],
+            professors: JSON.parse(localStorage.getItem('professors')) || ['دکتر احمدی', 'دکتر محمدی'],
+            selectedUniversities: [],
+            selectedProfessors: [],
+            selectedTags: [],
+            currentPreviewMaterial: null
+        };
+
+        // مدیر سیستم
+        const ADMIN_ID = 'admin14021213010';
+        const ADMIN_NAME = 'admin';
+
+        // اعتبارسنجی شماره دانشجویی برای کاربران عادی
+        function validateStudentId(studentId) {
+            // اگر شماره دانشجویی مربوط به ادمین باشد، نیاز به اعتبارسنجی عددی ندارد
+            if (studentId === ADMIN_ID) {
+                return true;
+            }
+            const idRegex = /^\d{11}$/;
+            return idRegex.test(studentId);
+        }
+
+        // اعتبارسنجی نام برای کاربران عادی
+        function validatePersianName(name) {
+            // اگر نام مربوط به ادمین باشد، نیاز به اعتبارسنجی فارسی ندارد
+            if (name === ADMIN_NAME) {
+                return true;
+            }
+            const persianRegex = /^[\u0600-\u06FF\s]{8,}$/;
+            return persianRegex.test(name);
+        }
+
+        // نمایش نوتیفیکیشن
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? '#388e3c' : '#d32f2f';
+            notification.className = `notification show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // تبدیل تاریخ به شمسی
+        function toPersianDate(date) {
+            const gregorian = new Date(date);
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                calendar: 'persian',
+                numberingSystem: 'arab'
+            };
+            return new Intl.DateTimeFormat('fa-IR', options).format(gregorian);
+        }
+
+        // تولید کد تصادفی 5 رقمی
+        function generateMaterialCode() {
+            return Math.floor(10000 + Math.random() * 90000).toString();
+        }
+
+        // محاسبه حجم فایل
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // تبدیل فایل به Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (err) => reject(new Error('خطا در خواندن فایل: ' + err));
+                try {
+                    reader.readAsDataURL(file);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+
+        // دانلود فایل از Base64 - بهبود یافته برای موبایل
+        function downloadFromBase64(base64String, filename) {
+            return new Promise((resolve) => {
+                try {
+                    // روش جدید برای موبایل - استفاده از blob
+                    fetch(base64String)
+                        .then(res => res.blob())
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            resolve(true);
+                        })
+                        .catch(() => {
+                            // روش قدیمی برای مرورگرهای قدیمی
+                            const link = document.createElement('a');
+                            link.href = base64String;
+                            link.download = filename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            resolve(true);
+                        });
+                } catch (error) {
+                    console.error('خطا در دانلود:', error);
+                    resolve(false);
+                }
+            });
+        }
+
+        // مدیریت دانشگاه‌ها
+        function addUniversity() {
+            const universityInput = document.getElementById('newUniversity');
+            const name = universityInput.value.trim();
+            
+            if (name && !appState.universities.includes(name)) {
+                appState.universities.push(name);
+                localStorage.setItem('universities', JSON.stringify(appState.universities));
+                renderUniversities();
+                universityInput.value = '';
+                showNotification('دانشگاه با موفقیت اضافه شد');
+            }
+        }
+
+        function addProfessor() {
+            const professorInput = document.getElementById('newProfessor');
+            const name = professorInput.value.trim();
+            
+            if (name && !appState.professors.includes(name)) {
+                appState.professors.push(name);
+                localStorage.setItem('professors', JSON.stringify(appState.professors));
+                renderProfessors();
+                professorInput.value = '';
+                showNotification('استاد با موفقیت اضافه شد');
+            }
+        }
+
+        function toggleUniversity(university) {
+            const index = appState.selectedUniversities.indexOf(university);
+            if (index > -1) {
+                appState.selectedUniversities.splice(index, 1);
+            } else {
+                appState.selectedUniversities.push(university);
+            }
+            renderUniversities();
+        }
+
+        function toggleProfessor(professor) {
+            const index = appState.selectedProfessors.indexOf(professor);
+            if (index > -1) {
+                appState.selectedProfessors.splice(index, 1);
+            } else {
+                appState.selectedProfessors.push(professor);
+            }
+            renderProfessors();
+        }
+
+        function renderUniversities() {
+            const container = document.getElementById('universitiesList');
+            container.innerHTML = appState.universities.map(uni => `
+                <div class="selection-item" onclick="toggleUniversity('${uni.replace(/'/g, "\\'")}')">
+                    <input type="checkbox" class="checkbox" ${appState.selectedUniversities.includes(uni) ? 'checked' : ''}>
+                    ${uni}
+                </div>
+            `).join('');
+        }
+
+        function renderProfessors() {
+            const container = document.getElementById('professorsList');
+            container.innerHTML = appState.professors.map(prof => `
+                <div class="selection-item" onclick="toggleProfessor('${prof.replace(/'/g, "\\'")}')">
+                    <input type="checkbox" class="checkbox" ${appState.selectedProfessors.includes(prof) ? 'checked' : ''}>
+                    ${prof}
+                </div>
+            `).join('');
+        }
+
+        // مدیریت برچسب‌ها
+        function initTagSelection() {
+            document.querySelectorAll('.tag-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const tag = this.getAttribute('data-tag');
+                    toggleTag(tag);
+                });
+            });
+        }
+
+        function toggleTag(tag) {
+            const index = appState.selectedTags.indexOf(tag);
+            if (index > -1) {
+                appState.selectedTags.splice(index, 1);
+            } else {
+                appState.selectedTags.push(tag);
+            }
+            
+            document.querySelectorAll('.tag-option').forEach(option => {
+                const optionTag = option.getAttribute('data-tag');
+                if (appState.selectedTags.includes(optionTag)) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        }
+
+        // ورود به سیستم
+        function login() {
+            const name = document.getElementById('studentName').value.trim();
+            const studentId = document.getElementById('studentId').value.trim();
+            const nameError = document.getElementById('nameError');
+            const idError = document.getElementById('idError');
+
+            // مخفی کردن خطاهای قبلی
+            nameError.style.display = 'none';
+            idError.style.display = 'none';
+
+            // اعتبارسنجی فیلدها
+            let hasError = false;
+
+            if (!name) {
+                nameError.textContent = 'لطفا نام و نام خانوادگی را وارد کنید';
+                nameError.style.display = 'block';
+                hasError = true;
+            } else if (!validatePersianName(name)) {
+                nameError.textContent = 'نام باید حداقل ۸ کاراکتر فارسی باشد';
+                nameError.style.display = 'block';
+                hasError = true;
+            }
+
+            if (!studentId) {
+                idError.textContent = 'لطفا شماره دانشجویی را وارد کنید';
+                idError.style.display = 'block';
+                hasError = true;
+            } else if (!validateStudentId(studentId)) {
+                idError.textContent = 'شماره دانشجویی باید ۱۱ رقم باشد';
+                idError.style.display = 'block';
+                hasError = true;
+            }
+
+            if (hasError) {
+                return;
+            }
+
+            appState.currentUser = { name, studentId };
+            appState.isAdmin = (studentId === ADMIN_ID && name === ADMIN_NAME);
+
+            const userExists = appState.users.find(u => u.studentId === studentId);
+            if (!userExists) {
+                appState.users.push({ name, studentId, joinDate: new Date().toISOString() });
+                localStorage.setItem('users', JSON.stringify(appState.users));
+            }
+
+            showPage(appState.isAdmin ? 'adminPage' : 'userPage');
+            
+            if (appState.isAdmin) {
+                document.getElementById('userWelcome').textContent = `مدیریت جزوات - ${name}`;
+                renderAdminMaterials();
+                renderUsers();
+            } else {
+                document.getElementById('userWelcome').textContent = `${name} عزیز خوش آمدید`;
+                renderUserMaterials();
+            }
+            
+            showNotification(`خوش آمدید ${name}`);
+        }
+
+        // خروج از سیستم
+        function logout() {
+            appState.currentUser = null;
+            appState.isAdmin = false;
+            showPage('loginPage');
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentId').value = '';
+            showNotification('با موفقیت خارج شدید');
+        }
+
+        // نمایش صفحه
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'adminPage') {
+                renderUniversities();
+                renderProfessors();
+                renderUsers();
+            }
+        }
+
+        // سوئیچ تب‌های مدیریت
+        function switchAdminTab(tabName) {
+            // غیرفعال کردن همه تب‌ها
+            document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-content').forEach(content => content.classList.remove('active'));
+            
+            // فعال کردن تب انتخاب شده
+            document.querySelector(`.admin-tab[onclick="switchAdminTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+        }
+
+        // افزودن جزوه جدید
+        async function addMaterial() {
+            const name = document.getElementById('materialName').value.trim();
+            const fileInput = document.getElementById('materialFile');
+            
+            if (!name || !fileInput.files.length) {
+                showNotification('لطفا نام جزوه و فایل را انتخاب کنید', 'error');
+                return;
+            }
+
+            if (appState.selectedUniversities.length === 0 || appState.selectedProfessors.length === 0) {
+                showNotification('لطفا حداقل یک دانشگاه و یک استاد را انتخاب کنید', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+
+            // بررسی نوع فایل
+            const nameIsPdf = file.name && file.name.toLowerCase().endsWith('.pdf');
+            const typeIsPdf = file.type && file.type.toLowerCase().includes('pdf');
+            if (!nameIsPdf && !typeIsPdf) {
+                showNotification('لطفا فقط فایل PDF آپلود کنید', 'error');
+                return;
+            }
+
+            // محدودیت حجم (10MB)
+            const MAX_BYTES = 10 * 1024 * 1024;
+            if (file.size > MAX_BYTES) {
+                showNotification('حجم فایل نباید بیشتر از 10 مگابایت باشد', 'error');
+                return;
+            }
+
+            try {
+                // تبدیل فایل به Base64
+                const fileBase64 = await fileToBase64(file);
+
+                const material = {
+                    id: Date.now().toString(),
+                    code: generateMaterialCode(),
+                    name: name,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    uploadDate: new Date().toISOString(),
+                    downloadCount: 0,
+                    fileData: fileBase64,
+                    tags: [...appState.selectedTags],
+                    universities: [...appState.selectedUniversities],
+                    professors: [...appState.selectedProfessors]
+                };
+
+                appState.materials.unshift(material);
+                localStorage.setItem('materials', JSON.stringify(appState.materials));
+
+                // ریست فرم
+                document.getElementById('materialName').value = '';
+                document.getElementById('materialFile').value = '';
+                document.getElementById('fileInfo').textContent = '';
+                document.getElementById('fileLabel').innerHTML = '📁 انتخاب فایل PDF';
+                appState.selectedTags = [];
+                appState.selectedUniversities = [];
+                appState.selectedProfessors = [];
+                document.querySelectorAll('.tag-option').forEach(opt => opt.classList.remove('selected'));
+                renderUniversities();
+                renderProfessors();
+
+                renderAdminMaterials();
+                showNotification(`جزوه \"${name}\" با موفقیت افزوده شد`);
+            } catch (error) {
+                showNotification('خطا در آپلود فایل', 'error');
+                console.error('خطا در آپلود:', error);
+            }
+        }
+
+        // نمایش جزوات در صفحه کاربر
+        function renderUserMaterials(searchTerm = '') {
+            const container = document.getElementById('materialsContainer');
+            let filteredMaterials = appState.materials;
+
+            if (searchTerm) {
+                filteredMaterials = appState.materials.filter(material =>
+                    material.name.includes(searchTerm) ||
+                    (material.code && material.code.includes(searchTerm)) ||
+                    material.universities.some(uni => uni.includes(searchTerm)) ||
+                    material.professors.some(prof => prof.includes(searchTerm))
+                );
+            }
+
+            if (filteredMaterials.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div>📚</div>
+                        <p>${searchTerm ? 'جزوه‌ای یافت نشد' : 'هنوز جزوه‌ای بارگذاری نشده است'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const isMobile = window.innerWidth < 768;
+            
+            let tableHTML = `
+                <table class="materials-table">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>کد جزوه</th>
+                            <th>نام جزوه</th>
+                            <th>دانشگاه</th>
+                            <th>استاد</th>
+                            <th>عملیات</th>
+                            ${!isMobile ? '<th>حجم</th>' : ''}
+                            <th>دانلود</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filteredMaterials.forEach((material, index) => {
+                const tagsHTML = (material.tags || []).map(tag => 
+                    `<span class="tag tag-${tag}">${tag === 'new' ? 'جدید' : tag === 'popular' ? 'پرطرفدار' : 'ویژه'}</span>`
+                ).join('');
+                
+                // در موبایل فقط دکمه دانلود نمایش داده می‌شود
+                const actionsHTML = isMobile ? `
+                    <button class="download-btn" onclick="downloadMaterial('${material.id}')">
+                        📥 دانلود
+                    </button>
+                ` : `
+                    <button class="download-btn mobile-hide" onclick="previewMaterial('${material.id}')">
+                        👁️ پیش‌نمایش
+                    </button>
+                    <button class="download-btn" onclick="downloadMaterial('${material.id}')">
+                        📥 دانلود
+                    </button>
+                    <button class="download-btn mobile-hide" onclick="shareMaterial('${material.id}')">
+                        🔗 اشتراک
+                    </button>
+                `;
+                
+                tableHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${material.code}</strong></td>
+                        <td>
+                            ${material.name}
+                            ${tagsHTML}
+                        </td>
+                        <td>${(material.universities || []).join(', ')}</td>
+                        <td>${(material.professors || []).join(', ')}</td>
+                        <td>${actionsHTML}</td>
+                        ${!isMobile ? `<td>${formatFileSize(material.fileSize)}</td>` : ''}
+                        <td>${material.downloadCount}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        // نمایش جزوات در پنل مدیریت
+        function renderAdminMaterials(searchTerm = '') {
+            const container = document.getElementById('adminMaterialsContainer');
+            let filteredMaterials = appState.materials;
+
+            if (searchTerm) {
+                const search = document.getElementById('adminSearchInput').value;
+                filteredMaterials = appState.materials.filter(material =>
+                    material.name.includes(search) ||
+                    (material.code && material.code.includes(search)) ||
+                    material.universities.some(uni => uni.includes(search)) ||
+                    material.professors.some(prof => prof.includes(search))
+                );
+            }
+
+            if (filteredMaterials.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div>📚</div>
+                        <p>${searchTerm ? 'جزوه‌ای یافت نشد' : 'هنوز جزوه‌ای بارگذاری نشده است'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table class="materials-table">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>کد جزوه</th>
+                            <th>نام جزوه</th>
+                            <th>دانشگاه</th>
+                            <th>استاد</th>
+                            <th>برچسب‌ها</th>
+                            <th>فایل</th>
+                            <th>حجم</th>
+                            <th>تعداد دانلود</th>
+                            <th>تاریخ بارگذاری</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filteredMaterials.forEach((material, index) => {
+                const tagsHTML = (material.tags || []).map(tag => 
+                    `<span class="tag tag-${tag}">${tag === 'new' ? 'جدید' : tag === 'popular' ? 'پرطرفدار' : 'ویژه'}</span>`
+                ).join('');
+                
+                tableHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${material.code}</strong></td>
+                        <td>${material.name}</td>
+                        <td>${(material.universities || []).join(', ')}</td>
+                        <td>${(material.professors || []).join(', ')}</td>
+                        <td>${tagsHTML}</td>
+                        <td>${material.fileName}</td>
+                        <td>${formatFileSize(material.fileSize)}</td>
+                        <td>${material.downloadCount}</td>
+                        <td>${toPersianDate(material.uploadDate)}</td>
+                        <td>
+                            <button class="btn-danger" onclick="deleteMaterial('${material.id}')" style="padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.8rem;">
+                                حذف
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        // نمایش کاربران در پنل مدیریت
+        function renderUsers(searchTerm = '') {
+            const container = document.getElementById('usersContainer');
+            let filteredUsers = appState.users;
+
+            if (searchTerm) {
+                const search = document.getElementById('userSearchInput').value;
+                filteredUsers = appState.users.filter(user =>
+                    user.name.includes(search) ||
+                    user.studentId.includes(search)
+                );
+            }
+
+            if (filteredUsers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div>👥</div>
+                        <p>${searchTerm ? 'کاربری یافت نشد' : 'هنوز کاربری ثبت نام نکرده است'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table class="materials-table">
+                    <thead>
+                        <tr>
+                            <th>ردیف</th>
+                            <th>نام و نام خانوادگی</th>
+                            <th>شماره دانشجویی</th>
+                            <th>تاریخ عضویت</th>
+                            <th>نوع کاربر</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filteredUsers.forEach((user, index) => {
+                const userType = (user.studentId === ADMIN_ID && user.name === ADMIN_NAME) ? 'مدیر' : 'کاربر عادی';
+                tableHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${user.name}</td>
+                        <td>${user.studentId}</td>
+                        <td>${toPersianDate(user.joinDate)}</td>
+                        <td>${userType}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        // پیش‌نمایش جزوه - فقط در دسکتاپ
+        async function previewMaterial(materialId) {
+            // در موبایل پیش‌نمایش نمایش داده نمی‌شود
+            if (window.innerWidth < 768) {
+                showNotification('پیش‌نمایش در موبایل در دسترس نیست', 'error');
+                return;
+            }
+            
+            const material = appState.materials.find(m => m.id === materialId);
+            if (material && material.fileData) {
+                appState.currentPreviewMaterial = material;
+                const canvas = document.getElementById('previewCanvas');
+                const success = await previewPDF(material.fileData, canvas);
+                
+                if (success) {
+                    document.getElementById('previewModal').classList.add('active');
+                    // جلوگیری از اسکرول پشت مودال
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    showNotification('خطا در نمایش پیش‌نمایش', 'error');
+                }
+            }
+        }
+
+        function previewPDF(base64String, canvas) {
+            return new Promise((resolve) => {
+                try {
+                    // استفاده از PDF.js برای نمایش واقعی PDF
+                    const loadingTask = pdfjsLib.getDocument(base64String);
+                    loadingTask.promise.then(pdf => {
+                        // نمایش صفحه اول
+                        pdf.getPage(1).then(page => {
+                            const viewport = page.getViewport({ scale: 1.5 });
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            
+                            const context = canvas.getContext('2d');
+                            const renderContext = {
+                                canvasContext: context,
+                                viewport: viewport
+                            };
+                            
+                            page.render(renderContext).promise.then(() => {
+                                resolve(true);
+                            });
+                        });
+                    }).catch(error => {
+                        console.error('خطا در نمایش PDF:', error);
+                        // در صورت خطا، نمایش پیام جایگزین
+                        const context = canvas.getContext('2d');
+                        canvas.width = 800;
+                        canvas.height = 1000;
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.fillStyle = "#f7f7f7";
+                        context.fillRect(0,0,canvas.width,canvas.height);
+                        context.font = '18px sans-serif';
+                        context.fillStyle = '#333';
+                        context.fillText('پیش‌نمایش جزوه', 30, 40);
+                        context.font = '14px sans-serif';
+                        context.fillText('برای مشاهده کامل از دکمه دانلود استفاده کنید.', 30, 70);
+                        resolve(true);
+                    });
+                } catch (e) {
+                    console.error(e);
+                    resolve(false);
+                }
+            });
+        }
+
+        // بستن پیش‌نمایش
+        function closePreview() {
+            document.getElementById('previewModal').classList.remove('active');
+            appState.currentPreviewMaterial = null;
+            // بازگردانی اسکرول
+            document.body.style.overflow = 'auto';
+        }
+
+        // دانلود از پیش‌نمایش
+        function downloadCurrentMaterial() {
+            if (appState.currentPreviewMaterial) {
+                downloadMaterial(appState.currentPreviewMaterial.id);
+                closePreview();
+            }
+        }
+
+        // دانلود جزوه - بهبود یافته برای موبایل
+        async function downloadMaterial(materialId) {
+            const material = appState.materials.find(m => m.id === materialId);
+            if (material && material.fileData) {
+                // افزایش تعداد دانلود
+                material.downloadCount = (material.downloadCount || 0) + 1;
+                localStorage.setItem('materials', JSON.stringify(appState.materials));
+                
+                // دانلود فایل واقعی
+                showNotification(`در حال دانلود "${material.name}"...`);
+                
+                try {
+                    // روش جدید برای موبایل - استفاده از blob
+                    const response = await fetch(material.fileData);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = material.fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showNotification(`دانلود "${material.name}" با موفقیت انجام شد`);
+                    
+                    // رندر مجدد جداول
+                    if (appState.isAdmin) {
+                        renderAdminMaterials();
+                    } else {
+                        renderUserMaterials();
+                    }
+                } catch (error) {
+                    console.error('خطا در دانلود:', error);
+                    showNotification('خطا در دانلود فایل', 'error');
+                }
+            } else {
+                showNotification('فایل یافت نشد', 'error');
+            }
+        }
+
+        // اشتراک‌گذاری جزوه
+        function shareMaterial(materialId) {
+            const material = appState.materials.find(m => m.id === materialId);
+            if (material) {
+                const shareLink = generateShareLink(materialId);
+                document.getElementById('shareLink').textContent = shareLink;
+                document.getElementById('shareModal').classList.add('active');
+                // جلوگیری از اسکرول پشت مودال
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // تولید لینک اشتراک‌گذاری
+        function generateShareLink(materialId) {
+            return `${window.location.origin}${window.location.pathname}?share=${materialId}`;
+        }
+
+        // کپی لینک اشتراک
+        function copyShareLink() {
+            const shareLink = document.getElementById('shareLink').textContent;
+            navigator.clipboard.writeText(shareLink).then(() => {
+                showNotification('لینک با موفقیت کپی شد');
+            }).catch(() => {
+                // روش جایگزین برای مرورگرهای قدیمی
+                const textArea = document.createElement('textarea');
+                textArea.value = shareLink;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('لینک با موفقیت کپی شد');
+            });
+        }
+
+        // بستن مودال اشتراک
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('active');
+            // بازگردانی اسکرول
+            document.body.style.overflow = 'auto';
+        }
+
+        // حذف جزوه
+        function deleteMaterial(materialId) {
+            if (confirm('آیا از حذف این جزوه اطمینان دارید؟')) {
+                appState.materials = appState.materials.filter(m => m.id !== materialId);
+                localStorage.setItem('materials', JSON.stringify(appState.materials));
+                renderAdminMaterials();
+                showNotification('جزوه با موفقیت حذف شد');
+            }
+        }
+
+        // مدیریت نمایش نام فایل
+        document.getElementById('materialFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileInfo').textContent = `${file.name} (${formatFileSize(file.size)})`;
+                document.getElementById('fileLabel').innerHTML = `✅ ${file.name}`;
+            } else {
+                document.getElementById('fileInfo').textContent = '';
+                document.getElementById('fileLabel').innerHTML = '📁 انتخاب فایل PDF';
+            }
+        });
+
+        // جستجو در صفحه کاربر
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            renderUserMaterials(e.target.value);
+        });
+
+        // جستجو در پنل مدیریت
+        document.getElementById('adminSearchInput').addEventListener('input', function(e) {
+            renderAdminMaterials(e.target.value);
+        });
+
+        // جستجو در لیست کاربران
+        document.getElementById('userSearchInput').addEventListener('input', function(e) {
+            renderUsers(e.target.value);
+        });
+
+        // جلوگیری از اسکرول کلی
+        document.body.classList.add('no-scroll');
+
+        // مقداردهی اولیه
+        document.addEventListener('DOMContentLoaded', function() {
+            initTagSelection();
+            renderUniversities();
+            renderProfessors();
+            
+            if (appState.materials.length === 0) {
+                // ایجاد یک PDF نمونه به صورت Base64 (یک PDF ساده)
+                const samplePDFBase64 = 'data:application/pdf;base64,JVBERi0xLjcKJeLjz9MKMSAwIG9iago8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFIvTGFuZyhmYS1JUikgL1N0cnVjdFRyZWVSb290IDExIDAgUi9NYXJrSW5mbzw8L01hcmtlZCB0cnVlPj4+PgplbmRvYmoKMiAwIG9iago8PC9UeXBlL1BhZ2VzL0NvdW50IDEvS2lkc1szIDAgUl0+PgplbmRvYmoKMyAwIG9iago8PC9UeXBlL1BhZ2UvTWVkaWFCb3hbMCAwIDU5NSA8NDJdL1BhcmVudCAyIDAgUi9Db250ZW50cyA0IDAgUi9SZXNvdXJjZXM8PC9Qcm9jU2V0IFsvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJXT4+Pj4KZW5kb2JqCjQgMCBvYmoKPDwvTGVuZ3RoIDU+PnN0cmVhbQoKcQolRU9GCg==';
+                
+                const sampleMaterials = [
+                    {
+                        id: '1',
+                        code: '12345',
+                        name: 'ریاضی مهندسی',
+                        fileName: 'ریاضی_مهندسی.pdf',
+                        fileSize: 2500000,
+                        uploadDate: new Date().toISOString(),
+                        downloadCount: 15,
+                        fileData: samplePDFBase64,
+                        tags: ['new', 'featured'],
+                        universities: ['دانشگاه تهران'],
+                        professors: ['دکتر احمدی']
+                    },
+                    {
+                        id: '2',
+                        code: '67890',
+                        name: 'فیزیک الکتریسیته',
+                        fileName: 'فیزیک_الکتریسیته.pdf',
+                        fileSize: 1800000,
+                        uploadDate: new Date(Date.now() - 86400000).toISOString(),
+                        downloadCount: 8,
+                        fileData: samplePDFBase64,
+                        tags: ['popular'],
+                        universities: ['دانشگاه صنعتی شریف'],
+                        professors: ['دکتر محمدی']
+                    }
+                ];
+                appState.materials = sampleMaterials;
+                localStorage.setItem('materials', JSON.stringify(appState.materials));
+            }
+        });
+    </script>
+</body>
+</html>
